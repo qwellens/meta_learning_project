@@ -30,22 +30,6 @@ class MAML:
             self.loss_func = mse
             self.forward = self.forward_fc
             self.construct_weights = self.construct_fc_weights
-        elif FLAGS.datasource == 'omniglot' or FLAGS.datasource == 'miniimagenet':
-            self.loss_func = xent
-            self.classification = True
-            if FLAGS.conv:
-                self.dim_hidden = FLAGS.num_filters
-                self.forward = self.forward_conv
-                self.construct_weights = self.construct_conv_weights
-            else:
-                self.dim_hidden = [256, 128, 64, 64]
-                self.forward=self.forward_fc
-                self.construct_weights = self.construct_fc_weights
-            if FLAGS.datasource == 'miniimagenet':
-                self.channels = 3
-            else:
-                self.channels = 1
-            self.img_size = int(np.sqrt(self.dim_input/self.channels))
         else:
             raise ValueError('Unrecognized data source.')
 
@@ -110,19 +94,21 @@ class MAML:
                     task_outputbs.append(output)
                     task_lossesb.append(self.loss_func(output, labelb))
 
-                task_output = [task_outputa, task_outputbs, task_lossa, task_lossesb, fast_weights]
+                task_loss_reptile = reptile(fast_weights, weights)
+
+                task_output = [task_outputa, task_outputbs, task_lossa, task_lossesb, task_loss_reptile]
 
                 return task_output
 
-            out_dtype = [tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, dict]
+            out_dtype = [tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, tf.float32]
             result = tf.map_fn(task_metalearn, elems=(self.inputa, self.inputb, self.labela, self.labelb), dtype=out_dtype, parallel_iterations=FLAGS.meta_batch_size)
-            outputas, outputbs, lossesa, lossesb, reptile_target_weights = result
+            outputas, outputbs, lossesa, lossesb, reptile_losses  = result
 
         ## Performance & Optimization
         if 'train' in prefix:
             self.total_loss1 = total_loss1 = tf.reduce_sum(lossesa) / tf.to_float(FLAGS.meta_batch_size)
             self.total_losses2 = total_losses2 = [tf.reduce_sum(lossesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j in range(num_updates)]
-            # self.total_reptile_loss = total_reptile_loss = tf.reduce_sum(reptile_losses) / tf.to_float(FLAGS.meta_batch_size)
+            self.total_reptile_loss = total_reptile_loss = tf.reduce_sum(reptile_losses) / tf.to_float(FLAGS.meta_batch_size)
             # after the map_fn
             self.outputas, self.outputbs = outputas, outputbs
             if self.classification:
@@ -141,14 +127,7 @@ class MAML:
                 self.metatrain_op = optimizer.apply_gradients(gvs)
 
             if FLAGS.reptile:
-                self.reptile_op = tf.train.AdamOptimizer(self.meta_lr).minimize(5)
-
-        else:
-            self.metaval_total_loss1 = total_loss1 = tf.reduce_sum(lossesa) / tf.to_float(FLAGS.meta_batch_size)
-            self.metaval_total_losses2 = total_losses2 = [tf.reduce_sum(lossesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j in range(num_updates)]
-            if self.classification:
-                self.metaval_total_accuracy1 = total_accuracy1 = tf.reduce_sum(accuraciesa) / tf.to_float(FLAGS.meta_batch_size)
-                self.metaval_total_accuracies2 = total_accuracies2 =[tf.reduce_sum(accuraciesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j in range(num_updates)]
+                self.reptile_op = tf.train.AdamOptimizer(self.meta_lr).minimize(total_reptile_loss)
 
         ## Summaries
         tf.summary.scalar(prefix+'Pre-update loss', total_loss1)
@@ -178,46 +157,5 @@ class MAML:
             hidden = normalize(tf.matmul(hidden, weights['w'+str(i+1)]) + weights['b'+str(i+1)], activation=tf.nn.relu, reuse=reuse, scope=str(i+1))
         return tf.matmul(hidden, weights['w'+str(len(self.dim_hidden)+1)]) + weights['b'+str(len(self.dim_hidden)+1)]
 
-    def construct_conv_weights(self):
-        weights = {}
-
-        dtype = tf.float32
-        conv_initializer =  tf.contrib.layers.xavier_initializer_conv2d(dtype=dtype)
-        fc_initializer =  tf.contrib.layers.xavier_initializer(dtype=dtype)
-        k = 3
-
-        weights['conv1'] = tf.get_variable('conv1', [k, k, self.channels, self.dim_hidden], initializer=conv_initializer, dtype=dtype)
-        weights['b1'] = tf.Variable(tf.zeros([self.dim_hidden]))
-        weights['conv2'] = tf.get_variable('conv2', [k, k, self.dim_hidden, self.dim_hidden], initializer=conv_initializer, dtype=dtype)
-        weights['b2'] = tf.Variable(tf.zeros([self.dim_hidden]))
-        weights['conv3'] = tf.get_variable('conv3', [k, k, self.dim_hidden, self.dim_hidden], initializer=conv_initializer, dtype=dtype)
-        weights['b3'] = tf.Variable(tf.zeros([self.dim_hidden]))
-        weights['conv4'] = tf.get_variable('conv4', [k, k, self.dim_hidden, self.dim_hidden], initializer=conv_initializer, dtype=dtype)
-        weights['b4'] = tf.Variable(tf.zeros([self.dim_hidden]))
-        if FLAGS.datasource == 'miniimagenet':
-            # assumes max pooling
-            weights['w5'] = tf.get_variable('w5', [self.dim_hidden*5*5, self.dim_output], initializer=fc_initializer)
-            weights['b5'] = tf.Variable(tf.zeros([self.dim_output]), name='b5')
-        else:
-            weights['w5'] = tf.Variable(tf.random_normal([self.dim_hidden, self.dim_output]), name='w5')
-            weights['b5'] = tf.Variable(tf.zeros([self.dim_output]), name='b5')
-        return weights
-
-    def forward_conv(self, inp, weights, reuse=False, scope=''):
-        # reuse is for the normalization parameters.
-        channels = self.channels
-        inp = tf.reshape(inp, [-1, self.img_size, self.img_size, channels])
-
-        hidden1 = conv_block(inp, weights['conv1'], weights['b1'], reuse, scope+'0')
-        hidden2 = conv_block(hidden1, weights['conv2'], weights['b2'], reuse, scope+'1')
-        hidden3 = conv_block(hidden2, weights['conv3'], weights['b3'], reuse, scope+'2')
-        hidden4 = conv_block(hidden3, weights['conv4'], weights['b4'], reuse, scope+'3')
-        if FLAGS.datasource == 'miniimagenet':
-            # last hidden layer is 6x6x64-ish, reshape to a vector
-            hidden4 = tf.reshape(hidden4, [-1, np.prod([int(dim) for dim in hidden4.get_shape()[1:]])])
-        else:
-            hidden4 = tf.reduce_mean(hidden4, [1, 2])
-
-        return tf.matmul(hidden4, weights['w5']) + weights['b5']
 
 

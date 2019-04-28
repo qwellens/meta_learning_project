@@ -2,14 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="76acf28b-fdce-4bbd-981b-ef72f9044203" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/maml-master/visualize.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reptile.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reptile/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reptile/network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maml-master/data_generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/maml-master/data_generator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maml-master/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/maml-master/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maml-master/maml.py" beforeDir="false" afterPath="$PROJECT_DIR$/maml-master/maml.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/maml-master/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/maml-master/utils.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -23,11 +19,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="maml.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="maml.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/maml-master/maml.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="194">
-              <caret line="114" column="34" selection-start-line="114" selection-start-column="34" selection-end-line="114" selection-end-column="34" />
+            <state relative-caret-position="-1588">
+              <caret line="48" column="11" selection-start-line="48" selection-start-column="9" selection-end-line="48" selection-end-column="69" />
               <folding>
                 <element signature="e#61#98#0" expanded="true" />
               </folding>
@@ -35,20 +31,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="utils.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/maml-master/utils.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="464">
-              <caret line="63" column="34" selection-start-line="63" selection-start-column="28" selection-end-line="63" selection-end-column="34" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/maml-master/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="144">
-              <caret line="8" column="8" lean-forward="true" selection-start-line="8" selection-start-column="8" selection-end-line="8" selection-end-column="181" />
+            <state relative-caret-position="-489">
+              <caret line="219" lean-forward="true" selection-start-line="219" selection-end-line="219" />
             </state>
           </provider>
         </entry>
@@ -72,6 +59,7 @@
       <find>print(tar</find>
       <find>test_num</find>
       <find>self.test</find>
+      <find>construct</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -83,11 +71,11 @@
         <option value="$PROJECT_DIR$/reptile.py" />
         <option value="$PROJECT_DIR$/reptile/maml.py" />
         <option value="$PROJECT_DIR$/reptile/network.py" />
-        <option value="$PROJECT_DIR$/maml-master/data_generator.py" />
         <option value="$PROJECT_DIR$/maml-master/visualize.py" />
-        <option value="$PROJECT_DIR$/maml-master/main.py" />
         <option value="$PROJECT_DIR$/maml-master/utils.py" />
+        <option value="$PROJECT_DIR$/maml-master/data_generator.py" />
         <option value="$PROJECT_DIR$/maml-master/maml.py" />
+        <option value="$PROJECT_DIR$/maml-master/main.py" />
       </list>
     </option>
   </component>
@@ -130,6 +118,10 @@
               <item name="meta_learning_project" type="462c0819:PsiDirectoryNode" />
               <item name="reptile" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="meta_learning_project" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -142,6 +134,11 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Quentin\Documents\Classes\6.882\project\meta_learning_project\reptile" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -199,15 +196,15 @@
     <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
-      <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Python Console" order="7" />
+      <window_info anchor="bottom" id="Event Log" order="12" side_tool="true" />
+      <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="8" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.4413793" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.0" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.02734375" />
+      <window_info anchor="bottom" id="Terminal" order="11" visible="true" weight="0.0" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21614583" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="right" id="Database" order="3" />
+      <window_info anchor="right" id="Database" order="4" />
       <window_info anchor="right" id="SciView" order="3" visible="true" weight="6.510417E-4" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -284,13 +281,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/maml-master/data_generator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="529">
-          <caret line="181" lean-forward="true" selection-start-line="181" selection-end-line="181" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/reptile/network.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="506">
@@ -298,34 +288,50 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/reptile/data_generator.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/maml-master/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="551">
+          <caret line="63" column="34" selection-start-line="63" selection-start-column="28" selection-end-line="63" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/maml-master/visualize.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
+        <state relative-caret-position="396">
           <caret line="23" column="51" selection-start-line="23" selection-start-column="51" selection-end-line="23" selection-end-column="51" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/maml-master/utils.py">
+    <entry file="file://$PROJECT_DIR$/reptile/maml.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/maml-master/maml.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="464">
-          <caret line="63" column="34" selection-start-line="63" selection-start-column="28" selection-end-line="63" selection-end-column="34" />
+        <state relative-caret-position="-1588">
+          <caret line="48" column="11" selection-start-line="48" selection-start-column="9" selection-end-line="48" selection-end-column="69" />
+          <folding>
+            <element signature="e#61#98#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/maml-master/data_generator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-669">
+          <caret line="9" column="14" selection-start-line="9" selection-start-column="14" selection-end-line="9" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/maml-master/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="8" column="8" lean-forward="true" selection-start-line="8" selection-start-column="8" selection-end-line="8" selection-end-column="181" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/maml-master/maml.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="194">
-          <caret line="114" column="34" selection-start-line="114" selection-start-column="34" selection-end-line="114" selection-end-column="34" />
-          <folding>
-            <element signature="e#61#98#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-489">
+          <caret line="219" lean-forward="true" selection-start-line="219" selection-end-line="219" />
         </state>
       </provider>
     </entry>
