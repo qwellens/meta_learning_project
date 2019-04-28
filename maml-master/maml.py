@@ -28,22 +28,6 @@ class MAML:
             self.loss_func = mse
             self.forward = self.forward_fc
             self.construct_weights = self.construct_fc_weights
-        elif FLAGS.datasource == 'omniglot' or FLAGS.datasource == 'miniimagenet':
-            self.loss_func = xent
-            self.classification = True
-            if FLAGS.conv:
-                self.dim_hidden = FLAGS.num_filters
-                self.forward = self.forward_conv
-                self.construct_weights = self.construct_conv_weights
-            else:
-                self.dim_hidden = [256, 128, 64, 64]
-                self.forward=self.forward_fc
-                self.construct_weights = self.construct_fc_weights
-            if FLAGS.datasource == 'miniimagenet':
-                self.channels = 3
-            else:
-                self.channels = 1
-            self.img_size = int(np.sqrt(self.dim_input/self.channels))
         else:
             raise ValueError('Unrecognized data source.')
 
@@ -182,46 +166,5 @@ class MAML:
             hidden = normalize(tf.matmul(hidden, weights['w'+str(i+1)]) + weights['b'+str(i+1)], activation=tf.nn.relu, reuse=reuse, scope=str(i+1))
         return tf.matmul(hidden, weights['w'+str(len(self.dim_hidden)+1)]) + weights['b'+str(len(self.dim_hidden)+1)]
 
-    def construct_conv_weights(self):
-        weights = {}
-
-        dtype = tf.float32
-        conv_initializer =  tf.contrib.layers.xavier_initializer_conv2d(dtype=dtype)
-        fc_initializer =  tf.contrib.layers.xavier_initializer(dtype=dtype)
-        k = 3
-
-        weights['conv1'] = tf.get_variable('conv1', [k, k, self.channels, self.dim_hidden], initializer=conv_initializer, dtype=dtype)
-        weights['b1'] = tf.Variable(tf.zeros([self.dim_hidden]))
-        weights['conv2'] = tf.get_variable('conv2', [k, k, self.dim_hidden, self.dim_hidden], initializer=conv_initializer, dtype=dtype)
-        weights['b2'] = tf.Variable(tf.zeros([self.dim_hidden]))
-        weights['conv3'] = tf.get_variable('conv3', [k, k, self.dim_hidden, self.dim_hidden], initializer=conv_initializer, dtype=dtype)
-        weights['b3'] = tf.Variable(tf.zeros([self.dim_hidden]))
-        weights['conv4'] = tf.get_variable('conv4', [k, k, self.dim_hidden, self.dim_hidden], initializer=conv_initializer, dtype=dtype)
-        weights['b4'] = tf.Variable(tf.zeros([self.dim_hidden]))
-        if FLAGS.datasource == 'miniimagenet':
-            # assumes max pooling
-            weights['w5'] = tf.get_variable('w5', [self.dim_hidden*5*5, self.dim_output], initializer=fc_initializer)
-            weights['b5'] = tf.Variable(tf.zeros([self.dim_output]), name='b5')
-        else:
-            weights['w5'] = tf.Variable(tf.random_normal([self.dim_hidden, self.dim_output]), name='w5')
-            weights['b5'] = tf.Variable(tf.zeros([self.dim_output]), name='b5')
-        return weights
-
-    def forward_conv(self, inp, weights, reuse=False, scope=''):
-        # reuse is for the normalization parameters.
-        channels = self.channels
-        inp = tf.reshape(inp, [-1, self.img_size, self.img_size, channels])
-
-        hidden1 = conv_block(inp, weights['conv1'], weights['b1'], reuse, scope+'0')
-        hidden2 = conv_block(hidden1, weights['conv2'], weights['b2'], reuse, scope+'1')
-        hidden3 = conv_block(hidden2, weights['conv3'], weights['b3'], reuse, scope+'2')
-        hidden4 = conv_block(hidden3, weights['conv4'], weights['b4'], reuse, scope+'3')
-        if FLAGS.datasource == 'miniimagenet':
-            # last hidden layer is 6x6x64-ish, reshape to a vector
-            hidden4 = tf.reshape(hidden4, [-1, np.prod([int(dim) for dim in hidden4.get_shape()[1:]])])
-        else:
-            hidden4 = tf.reduce_mean(hidden4, [1, 2])
-
-        return tf.matmul(hidden4, weights['w5']) + weights['b5']
 
 

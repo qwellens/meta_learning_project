@@ -75,9 +75,6 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
     if FLAGS.datasource == 'sinusoid':
         PRINT_INTERVAL = 1000
         TEST_PRINT_INTERVAL = PRINT_INTERVAL*5
-    else:
-        PRINT_INTERVAL = 100
-        TEST_PRINT_INTERVAL = PRINT_INTERVAL*5
 
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + exp_string, sess.graph)
@@ -220,14 +217,6 @@ def main():
             test_num_updates = 5
         else:
             test_num_updates = 10
-    else:
-        if FLAGS.datasource == 'miniimagenet':
-            if FLAGS.train == True:
-                test_num_updates = 1  # eval on at least one update during training
-            else:
-                test_num_updates = 10
-        else:
-            test_num_updates = 10
 
     if FLAGS.train == False:
         orig_meta_batch_size = FLAGS.meta_batch_size
@@ -236,20 +225,6 @@ def main():
 
     if FLAGS.datasource == 'sinusoid':
         data_generator = DataGenerator(FLAGS.update_batch_size*2, FLAGS.meta_batch_size)
-    else:
-        if FLAGS.metatrain_iterations == 0 and FLAGS.datasource == 'miniimagenet':
-            assert FLAGS.meta_batch_size == 1
-            assert FLAGS.update_batch_size == 1
-            data_generator = DataGenerator(1, FLAGS.meta_batch_size)  # only use one datapoint,
-        else:
-            if FLAGS.datasource == 'miniimagenet': # TODO - use 15 val examples for imagenet?
-                if FLAGS.train:
-                    data_generator = DataGenerator(FLAGS.update_batch_size+15, FLAGS.meta_batch_size)  # only use one datapoint for testing to save memory
-                else:
-                    data_generator = DataGenerator(FLAGS.update_batch_size*2, FLAGS.meta_batch_size)  # only use one datapoint for testing to save memory
-            else:
-                data_generator = DataGenerator(FLAGS.update_batch_size*2, FLAGS.meta_batch_size)  # only use one datapoint for testing to save memory
-
 
     dim_output = data_generator.dim_output
     if FLAGS.baseline == 'oracle':
@@ -260,29 +235,8 @@ def main():
     else:
         dim_input = data_generator.dim_input
 
-    if FLAGS.datasource == 'miniimagenet' or FLAGS.datasource == 'omniglot':
-        tf_data_load = True
-        num_classes = data_generator.num_classes
-
-        if FLAGS.train: # only construct training model if needed
-            random.seed(5)
-            image_tensor, label_tensor = data_generator.make_data_tensor()
-            inputa = tf.slice(image_tensor, [0,0,0], [-1,num_classes*FLAGS.update_batch_size, -1])
-            inputb = tf.slice(image_tensor, [0,num_classes*FLAGS.update_batch_size, 0], [-1,-1,-1])
-            labela = tf.slice(label_tensor, [0,0,0], [-1,num_classes*FLAGS.update_batch_size, -1])
-            labelb = tf.slice(label_tensor, [0,num_classes*FLAGS.update_batch_size, 0], [-1,-1,-1])
-            input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
-
-        random.seed(6)
-        image_tensor, label_tensor = data_generator.make_data_tensor(train=False)
-        inputa = tf.slice(image_tensor, [0,0,0], [-1,num_classes*FLAGS.update_batch_size, -1])
-        inputb = tf.slice(image_tensor, [0,num_classes*FLAGS.update_batch_size, 0], [-1,-1,-1])
-        labela = tf.slice(label_tensor, [0,0,0], [-1,num_classes*FLAGS.update_batch_size, -1])
-        labelb = tf.slice(label_tensor, [0,num_classes*FLAGS.update_batch_size, 0], [-1,-1,-1])
-        metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
-    else:
-        tf_data_load = False
-        input_tensors = None
+    tf_data_load = False
+    input_tensors = None
 
     model = MAML(dim_input, dim_output, test_num_updates=test_num_updates)
     if FLAGS.train or not tf_data_load:
