@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.signal as sp
 
 def output_and_truth_points(input, actual, predicted, grad_steps, function):
     plt.figure(1)

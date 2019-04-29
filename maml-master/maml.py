@@ -1,6 +1,7 @@
 """ Code for the MAML algorithm and network definitions. """
 from __future__ import print_function
 import numpy as np
+import scipy.signal as sp
 import sys
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -25,13 +26,11 @@ class MAML:
         self.meta_lr = tf.placeholder_with_default(FLAGS.meta_lr, ())
         self.classification = False
         self.test_num_updates = test_num_updates
-        if FLAGS.datasource == 'sinusoid':
-            self.dim_hidden = [40, 40]
-            self.loss_func = mse
-            self.forward = self.forward_fc
-            self.construct_weights = self.construct_fc_weights
-        else:
-            raise ValueError('Unrecognized data source.')
+
+        self.dim_hidden = [40, 40]
+        self.loss_func = mse
+        self.forward = self.forward_fc
+        self.construct_weights = self.construct_fc_weights
 
     def construct_model(self, input_tensors=None, prefix='metatrain_'):
         # a: training data for inner gradient, b: test data for meta gradient
@@ -122,8 +121,6 @@ class MAML:
                 #even though it computes losses after every of num_updates (i.e. default 5) gradient steps,
                 #it only actually uses losses after FLAGS.num_updates (i.e. 1) gradient steps
                 self.gvs = gvs = optimizer.compute_gradients(self.total_losses2[FLAGS.num_updates-1])
-                if FLAGS.datasource == 'miniimagenet':
-                    gvs = [(tf.clip_by_value(grad, -10, 10), var) for grad, var in gvs]
                 self.metatrain_op = optimizer.apply_gradients(gvs)
 
             if FLAGS.reptile:
