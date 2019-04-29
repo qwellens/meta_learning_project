@@ -4,10 +4,8 @@ Usage Instructions:
     10-shot sinusoid:
         python main.py --datasource=sinusoid --logdir=logs/sine/ --metatrain_iterations=70000 --norm=None --update_batch_size=10
 
-
     10-shot sinusoid reptile:
         python main.py --datasource=sinusoid --logdir=logs/sine/ --metatrain_iterations=70000 --norm=None --update_batch_size=32 --num_updates=10 --meta_batch_size=1 --reptile=True
-
 
     10-shot sinusoid baselines:
         python main.py --datasource=sinusoid --logdir=logs/sine/ --pretrain_iterations=70000 --metatrain_iterations=0 --norm=None --update_batch_size=10 --baseline=oracle
@@ -33,6 +31,7 @@ Usage Instructions:
 """
 import csv
 import numpy as np
+import scipy.signal as sp
 import pickle
 import random
 import tensorflow as tf
@@ -44,11 +43,10 @@ from tensorflow.python.platform import flags
 
 import visualize
 
-
 FLAGS = flags.FLAGS
 
 ## Dataset/method options
-flags.DEFINE_string('datasource', 'sinusoid', 'sinusoid or omniglot or miniimagenet')
+flags.DEFINE_string('datasource', 'square', 'sinusoid or triangular or square')
 flags.DEFINE_integer('num_classes', 5, 'number of classes used in classification (e.g. 5-way classification).')
 # oracle means task id is input (only suitable for sinusoid)
 flags.DEFINE_string('baseline', None, 'oracle, or None')
@@ -75,7 +73,7 @@ flags.DEFINE_bool('stop_grad', False, 'if True, do not use second derivatives in
 flags.DEFINE_bool('log', True, 'if false, do not log summaries, for debugging code.')
 flags.DEFINE_string('logdir', '/tmp/data', 'directory for summaries and checkpoints.')
 flags.DEFINE_bool('resume', True, 'resume training if there is a model available')
-flags.DEFINE_bool('train', True, 'True to train, False to test.')
+flags.DEFINE_bool('train', False, 'True to train, False to test.')
 flags.DEFINE_integer('test_iter', -1, 'iteration to load model (-1 for latest model)')
 flags.DEFINE_bool('test_set', False, 'Set to true to test on the the test set, False for the validation set.')
 flags.DEFINE_integer('train_update_batch_size', -1, 'number of examples used for gradient update during training (use if you want to test with a different number).')
@@ -85,9 +83,8 @@ flags.DEFINE_bool('plot_full_fn', True, 'whether to test the model on the full x
 def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
     SUMMARY_INTERVAL = 100
     SAVE_INTERVAL = 1000
-    if FLAGS.datasource == 'sinusoid':
-        PRINT_INTERVAL = 1000
-        TEST_PRINT_INTERVAL = PRINT_INTERVAL*5
+    PRINT_INTERVAL = 1000
+    TEST_PRINT_INTERVAL = PRINT_INTERVAL*5
 
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + exp_string, sess.graph)
@@ -146,29 +143,6 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
         if (itr!=0) and itr % SAVE_INTERVAL == 0:
             saver.save(sess, FLAGS.logdir + '/' + exp_string + '/model' + str(itr))
 
-        # sinusoid is infinite data, so no need to test on meta-validation set.
-        if (itr!=0) and itr % TEST_PRINT_INTERVAL == 0 and FLAGS.datasource !='sinusoid':
-            if 'generate' not in dir(data_generator):
-                feed_dict = {}
-                if model.classification:
-                    input_tensors = [model.metaval_total_accuracy1, model.metaval_total_accuracies2[FLAGS.num_updates-1], model.summ_op]
-                else:
-                    input_tensors = [model.metaval_total_loss1, model.metaval_total_losses2[FLAGS.num_updates-1], model.summ_op]
-            else:
-                batch_x, batch_y, amp, phase = data_generator.generate(train=False)
-                inputa = batch_x[:, :num_classes*FLAGS.update_batch_size, :]
-                inputb = batch_x[:, num_classes*FLAGS.update_batch_size:, :]
-                labela = batch_y[:, :num_classes*FLAGS.update_batch_size, :]
-                labelb = batch_y[:, num_classes*FLAGS.update_batch_size:, :]
-                feed_dict = {model.inputa: inputa, model.inputb: inputb,  model.labela: labela, model.labelb: labelb, model.meta_lr: 0.0}
-                if model.classification:
-                    input_tensors = [model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates-1]]
-                else:
-                    input_tensors = [model.total_loss1, model.total_losses2[FLAGS.num_updates-1]]
-
-            result = sess.run(input_tensors, feed_dict)
-            print('Validation results: ' + str(result[0]) + ', ' + str(result[1]))
-
     saver.save(sess, FLAGS.logdir + '/' + exp_string +  '/model' + str(itr))
 
 # calculated for omniglot
@@ -205,7 +179,14 @@ def test(model, saver, sess, exp_string, data_generator, test_num_updates=None):
         predicted  = sess.run(model.outputbs, feed_dict) #has shape (test_num_updates, 1, K, 1)
         result = losses1 + losses2
 
-        true_function = lambda x : amp*np.sin(x-phase)
+        # VISUALIZATION
+        if FLAGS.datasource == 'sinusoid':
+            function = np.sin
+        elif FLAGS.datasource == 'square':
+            function = sp.square
+        elif FLAGS.datasource == 'triangular':
+            function = sp.sawtooth
+        true_function = lambda x : amp*function(x-phase)
         visualize.output_and_truth_points(inputb, labelb, predicted, grad_steps=test_num_updates, function=true_function)
         visualize.loss_vs_grad_steps(losses2)
 
@@ -242,24 +223,22 @@ def test(model, saver, sess, exp_string, data_generator, test_num_updates=None):
     plt.show()
 
 def main():
-    if FLAGS.datasource == 'sinusoid':
-        #how many times to apply the gradient on the same training batch
-        if FLAGS.train:
-            test_num_updates = 5
-        else:
-            test_num_updates = 10
+
+    #how many times to apply the gradient on the same training batch
+    if FLAGS.train:
+        test_num_updates = 5
+    else:
+        test_num_updates = 10
 
     if FLAGS.train == False:
         orig_meta_batch_size = FLAGS.meta_batch_size
         # always use meta batch size of 1 when testing.
         FLAGS.meta_batch_size = 1
 
-    if FLAGS.datasource == 'sinusoid':
-        data_generator = DataGenerator(FLAGS.update_batch_size*2, FLAGS.meta_batch_size)
+    data_generator = DataGenerator(FLAGS.update_batch_size*2, FLAGS.meta_batch_size, FLAGS.datasource)
 
     dim_output = data_generator.dim_output
     if FLAGS.baseline == 'oracle':
-        assert FLAGS.datasource == 'sinusoid'
         dim_input = 3
         FLAGS.pretrain_iterations += FLAGS.metatrain_iterations
         FLAGS.metatrain_iterations = 0
