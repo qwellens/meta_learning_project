@@ -37,6 +37,33 @@ JOB_NAME = IDENTIFIER + "_alg-" + str(META_LEARNER) + "_fun-" + str(FUNCTION_TRA
 
 JOB_NAME = os.path.join("results", JOB_NAME)
 
+TEST_JOB_NAME = "test" + "_fun-" + str(FUNCTION_TEST) + "_k-" + str(K_TEST) + "_sgd-" + str(SGD_STEPS_TEST) + \
+                "_noise-" + str(NOISE_PERCENT_TEST) + "_runs-" + str(RUNS_TEST) + "_ilr-" + str(INNER_LR_TEST)
+TEST_JOB_NAME = os.path.join(JOB_NAME, TEST_JOB_NAME)
+
+REUSE_TRAINED_MODEL = False
+
+
+def test(model):
+    if os.path.exists(TEST_JOB_NAME):
+        raise AssertionError("Test job name already exists")
+    else:
+        os.mkdir(TEST_JOB_NAME)
+        f = open(os.path.join(TEST_JOB_NAME, "test_params.txt"), 'w')
+        f.write("META_LEARNER " + str(META_LEARNER) + '\n')
+        f.write("FUNCTION_TEST " + str(FUNCTION_TEST) + '\n')
+        f.write("K_TEST " + str(K_TEST) + '\n')
+        f.write("SGD_STEPS_TEST " + str(SGD_STEPS_TEST) + '\n')
+        f.write("NOISE_PERCENT_TEST " + str(NOISE_PERCENT_TEST) + '\n')
+        f.write("RUNS_TEST " + str(RUNS_TEST) + '\n')
+        f.write("INNER_LR_TEST " + str(INNER_LR_TEST) + '\n')
+        f.close()
+
+    eval_data = evaluate(model, FUNCTION_TEST, K_TEST, NOISE_PERCENT_TEST, SGD_STEPS_TEST, INNER_LR_TEST, RUNS_TEST)
+    # export numpy arrays to csv
+    np.savetxt(os.path.join(TEST_JOB_NAME, "eval_results.csv"), eval_data, delimiter=",")
+    mse_vs_sgdstep(eval_data, os.path.join(TEST_JOB_NAME, "mse_vs_sgd.png"))
+
 def main():
     if os.path.exists(JOB_NAME):
         raise AssertionError("Job name already exists")
@@ -65,21 +92,12 @@ def main():
     learning_alg.train(model, meta_train_data)
 
     torch.save(model, os.path.join(JOB_NAME, "trained_model.pth"))
+    test(model)
 
-    f = open(os.path.join(JOB_NAME, "test_params.txt"), 'w')
-    f.write("META_LEARNER " + str(META_LEARNER) + '\n')
-    f.write("FUNCTION_TEST " + str(FUNCTION_TEST) + '\n')
-    f.write("K_TEST " + str(K_TEST) + '\n')
-    f.write("SGD_STEPS_TEST " + str(SGD_STEPS_TEST) + '\n')
-    f.write("NOISE_PERCENT_TEST " + str(NOISE_PERCENT_TEST) + '\n')
-    f.write("RUNS_TEST " + str(RUNS_TEST) + '\n')
-    f.write("INNER_LR_TEST " + str(INNER_LR_TEST) + '\n')
-    f.close()
-    eval_data = evaluate(model, FUNCTION_TEST, K_TEST, NOISE_PERCENT_TEST, SGD_STEPS_TEST, INNER_LR_TEST, RUNS_TEST)
 
-    # export numpy arrays to csv
-    np.savetxt(os.path.join(JOB_NAME, "eval_results.csv"), eval_data, delimiter=",")
-    mse_vs_sgdstep(eval_data, os.path.join(JOB_NAME, "mse_vs_sgd.png"))
-
-main()
+if REUSE_TRAINED_MODEL:
+    model = torch.load(os.path.join(JOB_NAME, "trained_model.pth"))
+    test(model)
+else:
+    main()
 
