@@ -1,1 +1,2 @@
-inspector/results/*
+inspector/results/**
+inspector/__pycache__/**
