@@ -29,7 +29,7 @@ AVERAGER_SIZE_TRAIN = 50    #relevant for insect only, basically a batch size
 FUNCTION_TEST = "sine"     #choose between: "sine", "square", or "sawtooth"
 K_TEST = 2                #how many training samples per task
 SGD_STEPS_TEST = 10        #how many sgd steps to take to get the fast/specialized/inner model weights
-NOISE_PERCENT_TEST = 0     #noise applied on mini_train_set of tasks used during meta-training
+NOISE_PERCENT_TEST = 0.1     #noise applied on mini_train_set of tasks used during meta-training
 RUNS_TEST = 600            #number of tasks to test on
 INNER_LR_TEST = 0.01       #inner loop learning rate (SGD)
 
@@ -43,7 +43,7 @@ TEST_JOB_NAME = "test" + "_fun-" + str(FUNCTION_TEST) + "_k-" + str(K_TEST) + "_
                 "_noise-" + str(NOISE_PERCENT_TEST) + "_runs-" + str(RUNS_TEST) + "_ilr-" + str(INNER_LR_TEST)
 TEST_JOB_NAME = os.path.join(JOB_NAME, TEST_JOB_NAME)
 
-REUSE_TRAINED_MODEL = False
+REUSE_TRAINED_MODEL = True
 
 def get_ci(data):
     confidence = 0.95
@@ -58,6 +58,7 @@ def get_ci(data):
     return start, m, end
 
 def test(model):
+    print("testing")
     if os.path.exists(TEST_JOB_NAME):
         raise AssertionError("Test job name already exists")
     else:
@@ -80,8 +81,8 @@ def test(model):
     lo_ci, mean, hi_ci = get_ci(eval_data[:, 10])
     f = open(os.path.join(TEST_JOB_NAME, "test_results.txt"), 'w')
     f.write("MEAN MSE (after 10 sgd) " + str(mean) + '\n')
-    f.write("95 CI LOW" + str(lo_ci) + '\n')
-    f.write("95 CI HIGH" + str(hi_ci) + '\n')
+    f.write("95 CI LOW " + str(lo_ci) + '\n')
+    f.write("95 CI HIGH " + str(hi_ci) + '\n')
     f.close()
 
 
@@ -118,6 +119,7 @@ def main():
 
 if REUSE_TRAINED_MODEL:
     model = torch.load(os.path.join(JOB_NAME, "trained_model.pth"))
+    print("reusing ", os.path.join(JOB_NAME, "trained_model.pth"))
     test(model)
 else:
     main()
