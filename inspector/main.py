@@ -26,12 +26,15 @@ INNER_LR_TRAIN = 0.01       #inner loop learning rate (SGD)
 AVERAGER_SIZE_TRAIN = 50    #relevant for insect only, basically a batch size
 
 #meta-test
+REUSE_TRAINED_MODEL = True
 FUNCTION_TEST = "sine"     #choose between: "sine", "square", or "sawtooth"
 K_TEST = 2                #how many training samples per task
 SGD_STEPS_TEST = 10        #how many sgd steps to take to get the fast/specialized/inner model weights
-NOISE_PERCENT_TEST = 0.1     #noise applied on mini_train_set of tasks used during meta-training
+NOISE_PERCENT_TEST = 0.05     #noise applied on mini_train_set of tasks used during meta-training
 RUNS_TEST = 600            #number of tasks to test on
 INNER_LR_TEST = 0.01       #inner loop learning rate (SGD)
+
+
 
 JOB_NAME = IDENTIFIER + "_alg-" + str(META_LEARNER) + "_fun-" + str(FUNCTION_TRAIN) + "_k-" + str(K_TRAIN) + "_sgd-" + str(SGD_STEPS_TRAIN) + \
            "_noise-" + str(NOISE_PERCENT_TRAIN) + "_iterations-" + str(ITERATIONS_TRAIN) + "_olr-" + str(OUTER_LR_TRAIN) + \
@@ -42,8 +45,6 @@ JOB_NAME = os.path.join("results", JOB_NAME)
 TEST_JOB_NAME = "test" + "_fun-" + str(FUNCTION_TEST) + "_k-" + str(K_TEST) + "_sgd-" + str(SGD_STEPS_TEST) + \
                 "_noise-" + str(NOISE_PERCENT_TEST) + "_runs-" + str(RUNS_TEST) + "_ilr-" + str(INNER_LR_TEST)
 TEST_JOB_NAME = os.path.join(JOB_NAME, TEST_JOB_NAME)
-
-REUSE_TRAINED_MODEL = True
 
 def get_ci(data):
     confidence = 0.95

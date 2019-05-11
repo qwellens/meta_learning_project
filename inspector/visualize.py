@@ -13,6 +13,7 @@ def mse_vs_sgdstep(data, filename):
     df = pd.DataFrame(data).melt(var_name="SGD steps", value_name="MSE on test data")
     plt.figure()
     ax = sns.lineplot(x="SGD steps", y="MSE on test data", data=df, ci=95)
+    ax.set_ylim([0, 150])
     plt.title("Meta-Test Performance")
     plt.xlabel("SGD steps")
     plt.ylabel("MSE on mini-test (in % of task amplitude)")
