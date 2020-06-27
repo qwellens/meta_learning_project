@@ -12,11 +12,11 @@ import os
 import numpy as np
 import torch
 
-META_LEARNER = "reptile"    #choose between: "reptile", "maml", or "insect"
+META_LEARNER = "maml"    #choose between: "reptile", "maml", or "insect"
 IDENTIFIER = "a"            #give it a letter name (see spreadsheet)
 
 #meta-train
-FUNCTION_TRAIN = "sine"     #choose between: "sine", "square", or "sawtooth"
+FUNCTION_TRAIN = "sawtooth"     #choose between: "sine", "square", or "sawtooth"
 K_TRAIN = 2                #how many training samples per task
 SGD_STEPS_TRAIN = 10        #how many sgd steps to take to get the fast/specialized/inner model weights
 NOISE_PERCENT_TRAIN = 0     #noise applied on mini_train_set of tasks used during meta-training
@@ -27,20 +27,23 @@ AVERAGER_SIZE_TRAIN = 50    #relevant for insect only, basically a batch size
 
 #meta-test
 REUSE_TRAINED_MODEL = True
-FUNCTION_TEST = "sine"     #choose between: "sine", "square", or "sawtooth"
+FUNCTION_TEST = "sawtooth"     #choose between: "sine", "square", or "sawtooth"
 K_TEST = 2                #how many training samples per task
 SGD_STEPS_TEST = 10        #how many sgd steps to take to get the fast/specialized/inner model weights
-NOISE_PERCENT_TEST = 0.05     #noise applied on mini_train_set of tasks used during meta-training
+NOISE_PERCENT_TEST = 0.5     #noise applied on mini_train_set of tasks used during meta-training
 RUNS_TEST = 600            #number of tasks to test on
 INNER_LR_TEST = 0.01       #inner loop learning rate (SGD)
 
 
+# JOB_NAME = IDENTIFIER + "_alg-" + str(META_LEARNER) + "_fun-" + str(FUNCTION_TRAIN) + "_k-" + str(K_TRAIN) + "_sgd-" + str(SGD_STEPS_TRAIN) + \
+#            "_noise-" + str(NOISE_PERCENT_TRAIN) + "_iterations-" + str(ITERATIONS_TRAIN) + "_olr-" + str(OUTER_LR_TRAIN) + \
+#            "_ilr-" + str(INNER_LR_TRAIN) + "_avg-" + str(AVERAGER_SIZE_TRAIN)
 
-JOB_NAME = IDENTIFIER + "_alg-" + str(META_LEARNER) + "_fun-" + str(FUNCTION_TRAIN) + "_k-" + str(K_TRAIN) + "_sgd-" + str(SGD_STEPS_TRAIN) + \
+JOB_NAME = "_alg-" + str(META_LEARNER) + "_fun-" + str(FUNCTION_TRAIN) + "_k-" + str(K_TRAIN) + "_sgd-" + str(SGD_STEPS_TRAIN) + \
            "_noise-" + str(NOISE_PERCENT_TRAIN) + "_iterations-" + str(ITERATIONS_TRAIN) + "_olr-" + str(OUTER_LR_TRAIN) + \
            "_ilr-" + str(INNER_LR_TRAIN) + "_avg-" + str(AVERAGER_SIZE_TRAIN)
 
-JOB_NAME = os.path.join("results", JOB_NAME)
+JOB_NAME = os.path.join("results/" + str(FUNCTION_TRAIN) + "_k", JOB_NAME)
 
 TEST_JOB_NAME = "test" + "_fun-" + str(FUNCTION_TEST) + "_k-" + str(K_TEST) + "_sgd-" + str(SGD_STEPS_TEST) + \
                 "_noise-" + str(NOISE_PERCENT_TEST) + "_runs-" + str(RUNS_TEST) + "_ilr-" + str(INNER_LR_TEST)

@@ -1,2 +1,2 @@
 # 6.882 Final Project: Meta-Learning
-Analyze and compare traditional learning algorithms, MAML, Reptile, and MOMA on time-series.
+A comparison and analysis of meta-learning algorithm performance on time-series and image recognition tasks. Algorithms used are MAML, MOMA, and our own baseline Reptile.
